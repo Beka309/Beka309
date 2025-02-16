@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beginner Piano Lessons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            text-align: center;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .lesson, .exercise, .test, .song {
+            background: white;
+            padding: 15px;
+            margin: 10px auto;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        footer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Beginner Piano Lessons
+    </header>
+    <div class="content">
+        <div class="lesson">
+            <h2>Unit 1: Learning the Notes</h2>
+            <p>Understand the layout of the keyboard and identify the notes.</p>
+            <button onclick="setupAudioRecognition()">Try Playing a Note</button>
+        </div>
+        <div class="exercise">
+            <h2>Exercise: Find the C Note</h2>
+            <p>Press the C key on a real piano, and we'll listen to check if it's correct.</p>
+            <button onclick="setupAudioRecognition()">Start Listening</button>
+        </div>
+        <div class="lesson">
+            <h2>Unit 2: Finger Positioning</h2>
+            <p>Learn how to properly place your fingers on the piano keys.</p>
+        </div>
+        <div class="exercise">
+            <h2>Exercise: Finger Drills</h2>
+            <p>Follow the animated guide to practice finger placement.</p>
+        </div>
+        <div class="lesson">
+            <h2>Unit 3: Reading Sheet Music</h2>
+            <p>Learn to read musical notes on a staff and translate them to piano keys.</p>
+        </div>
+        <div class="test">
+            <h2>Test: Identify the Note</h2>
+            <p>Look at the note on the staff and click the correct piano key.</p>
+            <button onclick="alert('Correct!')">C</button>
+            <button onclick="alert('Try again!')">D</button>
+        </div>
+        <div class="song">
+            <h2>Song: Twinkle Twinkle Little Star</h2>
+            <p>Play along with the notes displayed on the screen.</p>
+            <button onclick="setupAudioRecognition()">Start Listening</button>
+        </div>
+    </div>
+    <footer>
+        &copy; 2025 Beginner Piano Lessons. All rights reserved.
+    </footer>
+
+    <script>
+        async function setupAudioRecognition() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.error('Microphone access is not supported in this environment.');
+                alert('Your browser does not support microphone access. Try using Google Chrome or checking browser settings.');
+                return;
+            }
+            try {
+                const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+                if (permissionStatus.state === 'denied') {
+                    alert('Microphone access has been blocked. Please enable it in your browser settings.');
+                    return;
+                }
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const microphone = audioContext.createMediaStreamSource(stream);
+                const analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                microphone.connect(analyser);
+
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function detectNotes() {
+                    analyser.getByteFrequencyData(dataArray);
+                    console.log('Captured audio frequencies:', dataArray);
+                    requestAnimationFrame(detectNotes);
+                }
+                detectNotes();
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                if (error.name === 'NotAllowedError') {
+                    alert('Microphone access was denied. Please check your browser settings and allow microphone access.');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const micPermissionButton = document.createElement('button');
+            micPermissionButton.innerText = 'Enable Microphone';
+            micPermissionButton.onclick = setupAudioRecognition;
+            document.body.appendChild(micPermissionButton);
+        });
+    </script>
+</body>
+</html>
+
